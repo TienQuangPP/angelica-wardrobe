@@ -1,0 +1,26 @@
+# local machine settings
+tools/config.local.json
+
+# never commit game content or generated data
+*.pck
+*.pkx
+*.pkx1
+*.dds
+*.tga
+*.ski
+*.bon
+*.stck
+*.gfx
+*.glb
+*.pkl
+*.ico
+*.exe
+elements.data
+tghm_data/
+lib/three/
+
+# python / editor noise
+__pycache__/
+*.pyc
+.vscode/
+.idea/

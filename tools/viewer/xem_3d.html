@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Xem thời trang 3D - TGHM</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; display: flex; height: 100vh; font: 14px system-ui, sans-serif; background: #1d1f24; color: #ddd; }
+  #side { width: 380px; display: flex; flex-direction: column; border-right: 1px solid #333; }
+  #tools { padding: 10px; display: grid; gap: 8px; border-bottom: 1px solid #333; }
+  #tools label.btn { background: #3b4250; color: #fff; padding: 6px; border-radius: 6px; text-align: center; cursor: pointer; font-size: 12px; }
+  #tools input[type=file] { display: none; }
+  #filter { padding: 8px; border-radius: 6px; border: 1px solid #444; background: #111; color: #eee; font-size: 14px; }
+  #group { padding: 6px; border-radius: 6px; border: 1px solid #444; background: #111; color: #eee; }
+  #hint { font-size: 12px; color: #999; line-height: 1.45; }
+  #count { font-size: 12px; color: #8ab4ff; }
+  #list { flex: 1; overflow: auto; margin: 0; padding: 0; list-style: none; }
+  #list li { padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #262626; font-size: 13px; }
+  #list li small { display: block; color: #888; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #list li:hover { background: #2a2d34; }
+  #list li.on { background: #2f4d86; }
+  #view { flex: 1; position: relative; }
+  #status { position: absolute; left: 10px; bottom: 10px; right: 10px; color: #aaa; font-size: 12px; pointer-events: none; }
+  #error { position: absolute; inset: 40px; display: none; padding: 20px; background: #4a1f1f; color: #fff; border-radius: 8px; font-size: 15px; line-height: 1.5; }
+  #drop { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+          background: rgba(59, 111, 216, .25); font-size: 22px; pointer-events: none; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "./lib/three/build/three.module.js",
+  "three/addons/": "./lib/three/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="side">
+  <div id="tools">
+    <input id="filter" placeholder="Tìm theo tên (vd: 圣诞, 婚纱, 10周年…)">
+    <select id="group"><option value="">Tất cả nhóm</option></select>
+    <div id="count"></div>
+    <label style="font-size:13px"><input type="checkbox" id="fxOn" checked> Hiện hiệu ứng (bộ có ✨)</label>
+    <div id="hint">Bấm một mô hình để xem. Giữ <b>Ctrl</b> khi bấm để ghép thêm món.
+      Kéo chuột trái: xoay · lăn chuột: phóng to · kéo chuột phải: di chuyển.</div>
+    <label class="btn">Hoặc chọn thư mục .glb khác…<input id="dir" type="file" webkitdirectory multiple></label>
+  </div>
+  <ul id="list"></ul>
+</div>
+<div id="view">
+  <div id="status">Đang khởi động…</div>
+  <div id="error"></div>
+  <div id="drop">Thả file .glb vào đây</div>
+</div>
+
+<script>
+  // Shown when the 3D library (loaded from the internet) cannot start.
+  setTimeout(() => {
+    if (!window.viewerReady) {
+      const e = document.getElementById('error');
+      e.style.display = 'block';
+      e.innerHTML = 'Không tải được thư viện 3D (three.js) từ internet.<br>' +
+        'Hãy kiểm tra kết nối mạng rồi tải lại trang (F5). Nên dùng Chrome hoặc Edge.';
+    }
+  }, 8000);
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { FxPlayer } from './fx.js';
+window.viewerReady = true;
+
+const $ = id => document.getElementById(id);
+const view = $('view'), status = $('status');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(devicePixelRatio);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+view.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x2b2e35);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x444455, 2.2));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+sun.position.set(-2, 4, -3);
+scene.add(sun);
+const back = new THREE.DirectionalLight(0xffffff, 0.8);
+back.position.set(2, 3, 3);
+scene.add(back);
+const grid = new THREE.GridHelper(4, 40, 0x555555, 0x3a3a3a);
+scene.add(grid);
+
+const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
+camera.position.set(0, 1.2, 3);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 1, 0);
+
+const loader = new GLTFLoader();
+const shown = new Map();
+const fx = new FxPlayer(scene);
+const clock = new THREE.Clock();
+const fxOn = $('fxOn');
+let fxItems = [];
+fxOn.onchange = () => { fx.visible = fxOn.checked; };
+
+function resize() {
+  const { clientWidth: w, clientHeight: h } = view;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+resize();
+renderer.setAnimationLoop(() => {
+  fx.update(clock.getDelta());
+  controls.update();
+  renderer.render(scene, camera);
+});
+
+function frame() {
+  const box = new THREE.Box3();
+  shown.forEach(o => box.expandByObject(o));
+  if (box.isEmpty()) return;
+  const size = box.getSize(new THREE.Vector3()).length();
+  const center = box.getCenter(new THREE.Vector3());
+  controls.target.copy(center);
+  // Characters face -Z after the left-handed -> right-handed conversion: look at their front.
+  camera.position.copy(center).add(new THREE.Vector3(0, size * 0.15, -size * 1.4));
+  camera.near = size / 200; camera.far = size * 50; camera.updateProjectionMatrix();
+  grid.position.y = box.min.y;
+}
+
+function clear() { shown.forEach(o => scene.remove(o)); shown.clear(); fx.clear(); fxItems = []; }
+
+function stats() {
+  let tris = 0;
+  shown.forEach(o => o.traverse(m => { if (m.isMesh && m.geometry.index) tris += m.geometry.index.count / 3; }));
+  const fxText = fxItems.length ? `  ·  ${fxItems.length} hiệu ứng: ${[...new Set(fxItems)].join(', ')}` : '';
+  status.textContent = [...shown.keys()].join(' + ') + `  —  ${tris.toLocaleString()} tam giác` + fxText;
+}
+
+async function showFx(item) {
+  for (const f of item.fx || []) {
+    try {
+      await fx.add('', f);
+      fxItems.push(f.n);
+    } catch (e) {
+      console.warn('effect failed', f.u, e);
+    }
+  }
+}
+
+async function show(item, add) {
+  if (!add) clear();
+  if (shown.has(item.name)) { scene.remove(shown.get(item.name)); shown.delete(item.name); stats(); return; }
+  status.textContent = 'Đang tải ' + item.name + '…';
+  try {
+    const gltf = await loader.parseAsync(await item.load(), '');
+    shown.set(item.name, gltf.scene);
+    scene.add(gltf.scene);
+    frame();
+    await showFx(item);
+    stats();
+  } catch (e) {
+    status.textContent = 'Lỗi khi mở ' + item.name + ': ' + e.message;
+  }
+}
+
+// ---- model list ----
+let items = [];  // {name, path, group, load}
+const list = $('list'), filter = $('filter'), group = $('group');
+
+function setItems(newItems) {
+  items = newItems;
+  const groups = [...new Set(items.map(i => i.group))].sort();
+  group.innerHTML = '<option value="">Tất cả nhóm</option>' + groups.map(g => `<option>${g}</option>`).join('');
+  render();
+}
+
+function render() {
+  const words = filter.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const g = group.value;
+  const matches = items.filter(i => (!g || i.group === g) && words.every(w => (i.name + ' ' + i.path).toLowerCase().includes(w)));
+  $('count').textContent = `${matches.length.toLocaleString()} / ${items.length.toLocaleString()} mô hình`;
+  list.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  for (const it of matches.slice(0, 2000)) {
+    const li = document.createElement('li');
+    li.innerHTML = `${it.fx ? '✨ ' : ''}${it.name}<small>${it.path}</small>`;
+    li.onclick = ev => {
+      const add = ev.ctrlKey || ev.metaKey;
+      if (!add) list.querySelectorAll('.on').forEach(x => x.classList.remove('on'));
+      li.classList.toggle('on');
+      show(it, add);
+    };
+    frag.appendChild(li);
+  }
+  list.appendChild(frag);
+  if (matches.length > 2000) {
+    const li = document.createElement('li');
+    li.innerHTML = '<small>…còn nữa, hãy gõ thêm từ khóa để lọc</small>';
+    list.appendChild(li);
+  }
+}
+filter.oninput = render;
+group.onchange = render;
+
+// The little local server is single-threaded: retry a request that comes back empty.
+async function fetchRetry(url, tries = 4) {
+  for (let i = 1; ; i++) {
+    try {
+      const r = await fetch(url);
+      if (r.ok) return r;
+      if (i >= tries) throw new Error('HTTP ' + r.status);
+    } catch (e) {
+      if (i >= tries) throw e;
+    }
+    await new Promise(res => setTimeout(res, 300 * i));
+  }
+}
+window.fetchRetry = fetchRetry;
+const stem = p => p.split('/').pop().replace(/\.glb$/i, '');
+const topGroup = p => p.split('/')[0];
+
+// Served by XEM_3D.bat: read the prepared index.
+if (location.protocol.startsWith('http')) {
+  try {
+    const idx = await fetchRetry('index.json').then(r => r.json());
+    setItems(idx.items.map(it => ({
+      name: it.n || stem(it.p), path: it.p, group: it.g || topGroup(it.p), fx: it.fx,
+      load: () => fetchRetry(it.p.split('/').map(encodeURIComponent).join('/')).then(r => r.arrayBuffer()),
+    })));
+    status.textContent = 'Chọn một mô hình ở danh sách bên trái';
+  } catch (e) {
+    status.textContent = 'Không đọc được index.json — dùng nút "chọn thư mục".';
+  }
+} else {
+  status.textContent = 'Hãy mở bằng file XEM_3D.bat (hoặc dùng nút "chọn thư mục").';
+}
+
+// Fallback: pick a folder. Note: the Windows folder dialog only shows folders, not files.
+$('dir').onchange = ev => {
+  const files = [...ev.target.files].filter(f => /\.glb$/i.test(f.name));
+  setItems(files.map(f => {
+    const path = f.webkitRelativePath || f.name;
+    return { name: stem(path), path, group: path.split('/').slice(1, 2)[0] || '', load: () => f.arrayBuffer() };
+  }).sort((a, b) => a.path.localeCompare(b.path)));
+};
+
+// Drag & drop
+const drop = $('drop');
+view.addEventListener('dragover', e => { e.preventDefault(); drop.style.display = 'flex'; });
+view.addEventListener('dragleave', () => { drop.style.display = 'none'; });
+view.addEventListener('drop', async e => {
+  e.preventDefault();
+  drop.style.display = 'none';
+  clear();
+  for (const f of [...e.dataTransfer.files].filter(f => /\.glb$/i.test(f.name)))
+    await show({ name: f.name, load: () => f.arrayBuffer() }, true);
+});
+
+// ?src=a.glb&src=b.glb
+for (const s of new URLSearchParams(location.search).getAll('src'))
+  await show({ name: decodeURIComponent(s.split('/').pop()), load: () => fetch(s).then(r => r.arrayBuffer()) }, true);
+</script>
+</body>
+</html>
