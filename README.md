@@ -1,33 +1,74 @@
-# Angelica Wardrobe — an MMO's fashion window, rebuilt as a standalone 3D app
+<p align="center">
+  <img src="docs/banner.svg" alt="Angelica Wardrobe — reverse-engineering an MMO engine to rebuild its in-game fashion window as a standalone 3D app" width="100%">
+</p>
 
-*[Tiếng Việt](README.vi.md)*
+<p align="center">
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white">
+  <img alt="three.js r160" src="https://img.shields.io/badge/three.js-r160-000000?logo=threedotjs&logoColor=white">
+  <img alt="glTF 2.0" src="https://img.shields.io/badge/glTF-2.0-87C540?logo=khronosgroup&logoColor=white">
+  <img alt="Windows" src="https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white">
+  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-ff8fc8">
+  <img alt="Built with Claude Code" src="https://img.shields.io/badge/built%20with-Claude%20Code-D97757">
+</p>
+
+<p align="center">
+  <b>English</b> · <a href="README.vi.md">Tiếng Việt</a> ·
+  <a href="#what-it-does">Features</a> · <a href="#how-it-works">How it works</a> ·
+  <a href="#running-it-with-your-own-client">Run it</a> · <a href="docs/FORMATS.md">Format notes</a>
+</p>
 
 Tools that read the data files of the **Thế Giới Hoàn Mỹ** client (the Vietnamese release of Perfect World,
-Angelica engine) and rebuild its in-game fashion collection window ("Thu thập") as a standalone 3D web app:
+Angelica engine) and rebuild its in-game fashion collection window ("Thu thập") as a standalone 3D app:
 every fashion set on the player's own character, with the game's UI, dyes, effects and animations.
 
-> **No game content is included.** This repository only contains code. Models, textures, UI images and game data
-> belong to their publisher; the tools generate them locally from a client you already have.
+> [!NOTE]
+> **No game content is included.** This repository only contains code. Models, textures, UI images and game
+> data belong to their publisher; the tools generate them locally from a client you already have.
 
 ## What it does
 
-- **Reads the undocumented formats** of the engine, all reverse engineered: `.pck/.pkx` packages,
-  `elements.data` (game database, per-record MPPC compression), `.ski` skinned meshes, `.bon` skeletons,
-  `.stck` animations, `.gfx` particle effects, `.mtl` materials, AUI dialog XML and `.stf` string tables.
-- **Converts** the 2,300+ fashion models it needs to skinned glTF (`.glb`) and keeps the game's own DDS
-  textures, so the browser samples the same DXT blocks and mipmaps as the game.
-- **Rebuilds the fashion window from the game's own UI files** (positions, frames, fonts, scroll behaviour),
-  with the real collection data: 315 female / 258 male sets in 6 collection groups, names, descriptions,
-  rarity, default colours, pets, effects.
-- **Re-implements engine logic found in the client executable** (x86 disassembly):
-  - the character-creator face morph (bone groups, slider factors, move / rotate / scale operations),
-  - the body-shape sliders (per-bone length / thickness / whole scale, as the engine's bone update applies them),
-  - the fashion shaders (dye masks in gamma space, channel maps, reflection, transparency rules).
-- **Checks itself against the game**: screenshots of the game window are compared with renders of the page to fit
-  the camera (Nelder–Mead on edge correlation), the lights (colour error) and the texture sharpness
-  (high-frequency energy); the body-shape values were confirmed against the running client.
-- **Ships as a desktop app**: a tiny C# launcher starts a local server and opens the page in an app window;
-  works fully offline.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🔍 Reads undocumented formats</h3>
+      All reverse engineered: <code>.pck/.pkx</code> packages, <code>elements.data</code> (per-record MPPC
+      compression), <code>.ski</code> meshes, <code>.bon</code> skeletons, <code>.stck</code> animations,
+      <code>.gfx</code> effects, <code>.mtl</code> materials, AUI dialogs, <code>.stf</code> strings.
+    </td>
+    <td width="50%" valign="top">
+      <h3>🧊 Converts to glTF</h3>
+      2,300+ skinned fashion models exported to <code>.glb</code>, keeping the game's own DDS textures so the
+      browser samples the same DXT blocks and mipmaps as the game.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>🧠 Re-implements engine logic</h3>
+      Found in the client's x86 code: the character-creator face morph, the body-shape bone rules, the fashion
+      shaders (gamma-space dye masks, channel maps, reflection, transparency).
+    </td>
+    <td valign="top">
+      <h3>🪟 Rebuilds the game window</h3>
+      From the game's own UI files: positions, frames, fonts, scrolling, with real collection data —
+      315 female / 258 male sets in 6 groups, rarity, default colours, pets, effects.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>📏 Checks itself against the game</h3>
+      Game screenshots vs renders: camera fitted with Nelder–Mead on edge correlation, lights on colour error,
+      texture sharpness on high-frequency energy; body-shape values confirmed on the running client.
+    </td>
+    <td valign="top">
+      <h3>🖥️ Ships as a desktop app</h3>
+      A tiny C# launcher starts a local server and opens the page in its own window. Fully offline.
+    </td>
+  </tr>
+</table>
+
+## How it works
+
+<p align="center"><img src="docs/pipeline.svg" alt="Game client → readers → engine logic → wardrobe data → desktop app, verified against game screenshots" width="100%"></p>
 
 ## Layout
 
@@ -42,9 +83,9 @@ tools/
   face_morph.py body_shape.py                        engine logic re-implemented from the executable
   build_wardrobe.py deploy_viewer.py                 wardrobe data + page deployment
   check_wardrobe.py check_glb.py prune_wardrobe.py   audits
-  tghm_paths.py                                      where the client and the output are (see below)
+  tghm_paths.py                                      where the client and the output are
   viewer/      tu_do.html / tu_do.js (wardrobe), aui.js (game UI renderer), fx.js (particles),
-               xem_3d.html (plain model browser), server.ps1, launcher/ (C# app window)
+               xem_3d.html (model browser), server.ps1, launcher/ (C# app window)
   _ref/        reverse-engineering and comparison helpers (disassembly, pack search, image metrics)
 docs/FORMATS.md  notes on the file formats and engine behaviour
 ```
@@ -54,7 +95,7 @@ docs/FORMATS.md  notes on the file formats and engine behaviour
 Requirements: Windows, Python 3.11+, `pip install -r requirements.txt`, a TGHM / Perfect World client.
 
 1. Put `tools/` inside the client folder, or create `tools/config.local.json`:
-   `{"game": "D:\\Games\\TGHM Online", "data": "E:\\TGHM_Data"}` (output folder, ~4 GB).
+   `{"game": "D:\\Games\\TGHM Online", "data": "E:\\TGHM_Data"}` (output folder, several GB).
 2. Extract the fashion assets: `py tools/extract_fashion.py`
 3. Export the game UI dialogs: `py tools/build_ui.py`
 4. Build the wardrobe (models, textures, catalog): `py tools/build_wardrobe.py`
@@ -73,4 +114,4 @@ against the client and decided what "identical to the game" meant at each step.
 
 ## License
 
-Code: MIT (see `LICENSE`). Game data, models, textures and UI art are not covered and not distributed.
+Code: MIT (see [`LICENSE`](LICENSE)). Game data, models, textures and UI art are not covered and not distributed.

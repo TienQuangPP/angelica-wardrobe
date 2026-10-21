@@ -1,31 +1,74 @@
-# Angelica Wardrobe — khung thời trang của game MMO, dựng lại thành ứng dụng 3D độc lập
+<p align="center">
+  <img src="docs/banner.svg" alt="Angelica Wardrobe — dò ngược engine game MMO để dựng lại khung thời trang thành ứng dụng 3D độc lập" width="100%">
+</p>
 
-*[English](README.md)*
+<p align="center">
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white">
+  <img alt="three.js r160" src="https://img.shields.io/badge/three.js-r160-000000?logo=threedotjs&logoColor=white">
+  <img alt="glTF 2.0" src="https://img.shields.io/badge/glTF-2.0-87C540?logo=khronosgroup&logoColor=white">
+  <img alt="Windows" src="https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white">
+  <img alt="Giấy phép MIT" src="https://img.shields.io/badge/license-MIT-ff8fc8">
+  <img alt="Làm cùng Claude Code" src="https://img.shields.io/badge/built%20with-Claude%20Code-D97757">
+</p>
+
+<p align="center">
+  <a href="README.md">English</a> · <b>Tiếng Việt</b> ·
+  <a href="#làm-được-gì">Tính năng</a> · <a href="#cách-hoạt-động">Cách hoạt động</a> ·
+  <a href="#chạy-với-bản-game-của-bạn">Cách chạy</a> · <a href="docs/FORMATS.md">Ghi chú định dạng</a>
+</p>
 
 Bộ công cụ đọc file dữ liệu của client **Thế Giới Hoàn Mỹ** (bản Việt của Perfect World, engine Angelica) và dựng
 lại khung "Thu thập" thời trang trong game thành một ứng dụng 3D chạy riêng: mọi bộ thời trang mặc trên chính
 nhân vật của bạn, đúng giao diện, màu nhuộm, hiệu ứng và động tác của game.
 
+> [!NOTE]
 > **Không kèm dữ liệu game.** Repo chỉ có code. Mô hình, ảnh, giao diện, dữ liệu thuộc về nhà phát hành; công cụ
 > tự tạo chúng trên máy từ bản game bạn đã có.
 
 ## Làm được gì
 
-- **Đọc các định dạng không có tài liệu** của engine (tự dò ngược): gói `.pck/.pkx`, `elements.data` (CSDL game,
-  nén MPPC từng bản ghi), mô hình `.ski`, khung xương `.bon`, động tác `.stck`, hiệu ứng `.gfx`, vật liệu `.mtl`,
-  giao diện AUI XML và bảng chữ `.stf`.
-- **Chuyển** hơn 2.300 mô hình thời trang sang glTF (`.glb`) có xương, giữ nguyên ảnh DDS gốc của game nên trình
-  duyệt vẽ đúng khối DXT và mipmap như game.
-- **Dựng lại khung thời trang từ chính file giao diện của game** (vị trí, khung, chữ, cách cuộn) với dữ liệu thật:
-  315 bộ nữ / 258 bộ nam trong 6 nhóm sưu tập, tên, mô tả, độ hiếm, màu gốc, linh sủng, hiệu ứng.
-- **Viết lại logic engine tìm được trong file chạy của game** (dịch ngược x86):
-  - nặn mặt theo thanh trượt dị dung (nhóm xương, hệ số, các phép dời / xoay / co giãn),
-  - dáng người theo thanh trượt (độ dài / độ dày / tỉ lệ từng xương như engine cập nhật xương),
-  - shader thời trang (mặt nạ nhuộm trong không gian gamma, kênh nb_, phản chiếu, độ trong suốt).
-- **Tự đối chiếu với game**: ảnh chụp cửa sổ game được so với ảnh trang web để khớp camera (Nelder–Mead trên
-  tương quan cạnh), ánh sáng (sai số màu) và độ nét (năng lượng tần số cao); số đo dáng người đã kiểm tra khớp
-  với game đang chạy.
-- **Chạy như ứng dụng**: chương trình C# nhỏ bật máy chủ tại máy và mở trang trong cửa sổ riêng, không cần mạng.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🔍 Đọc định dạng không có tài liệu</h3>
+      Tự dò ngược: gói <code>.pck/.pkx</code>, <code>elements.data</code> (nén MPPC từng bản ghi), mô hình
+      <code>.ski</code>, khung xương <code>.bon</code>, động tác <code>.stck</code>, hiệu ứng <code>.gfx</code>,
+      vật liệu <code>.mtl</code>, giao diện AUI, bảng chữ <code>.stf</code>.
+    </td>
+    <td width="50%" valign="top">
+      <h3>🧊 Chuyển sang glTF</h3>
+      Hơn 2.300 mô hình thời trang có xương xuất ra <code>.glb</code>, giữ nguyên ảnh DDS gốc của game nên trình
+      duyệt vẽ đúng khối DXT và mipmap như game.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>🧠 Viết lại logic engine</h3>
+      Tìm trong mã x86 của game: nặn mặt theo thanh trượt dị dung, quy tắc xương cho dáng người, shader thời
+      trang (mặt nạ nhuộm trong không gian gamma, kênh nb_, phản chiếu, độ trong suốt).
+    </td>
+    <td valign="top">
+      <h3>🪟 Dựng lại khung trong game</h3>
+      Từ chính file giao diện của game: vị trí, khung, chữ, cách cuộn, với dữ liệu thật — 315 bộ nữ / 258 bộ nam
+      trong 6 nhóm, độ hiếm, màu gốc, linh sủng, hiệu ứng.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>📏 Tự đối chiếu với game</h3>
+      So ảnh chụp game với ảnh trang: khớp camera bằng Nelder–Mead trên tương quan cạnh, ánh sáng theo sai số
+      màu, độ nét theo năng lượng tần số cao; số đo dáng người đã kiểm tra khớp với game đang chạy.
+    </td>
+    <td valign="top">
+      <h3>🖥️ Chạy như ứng dụng</h3>
+      Chương trình C# nhỏ bật máy chủ tại máy và mở trang trong cửa sổ riêng. Không cần mạng.
+    </td>
+  </tr>
+</table>
+
+## Cách hoạt động
+
+<p align="center"><img src="docs/pipeline.svg" alt="Client game → bộ đọc → logic engine → dữ liệu tủ đồ → ứng dụng, đối chiếu bằng ảnh chụp game" width="100%"></p>
 
 ## Chạy với bản game của bạn
 
@@ -49,5 +92,5 @@ vào game chụp ảnh đối chiếu, kiểm tra kết quả với game và quy
 
 ## Giấy phép
 
-Code: MIT (xem `LICENSE`). Dữ liệu, mô hình, ảnh, giao diện của game không thuộc giấy phép này và không được
-phát tán.
+Code: MIT (xem [`LICENSE`](LICENSE)). Dữ liệu, mô hình, ảnh, giao diện của game không thuộc giấy phép này và không
+được phát tán.

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#c9a6ff"/>
+    </marker>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#17112a"/>
+      <stop offset="1" stop-color="#2a1740"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="420" rx="20" fill="url(#bg)"/>
+  <text x="40" y="48" font-size="22" font-weight="700" fill="#ffffff">How it works</text>
+  <text x="40" y="74" font-size="14" fill="#bba7cf">Everything is generated on your machine from the game client you already have.</text>
+
+  <g font-size="14">
+    <!-- 1 game client -->
+    <g transform="translate(40 105)">
+      <rect width="190" height="190" rx="14" fill="#241a38" stroke="#7d5aa8"/>
+      <text x="95" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#ffd2ec">Game client</text>
+      <text x="18" y="62" fill="#e6dcf2">.pck / .pkx packages</text>
+      <text x="18" y="88" fill="#e6dcf2">elements.data</text>
+      <text x="18" y="114" fill="#e6dcf2">interfaces/*.xml (AUI)</text>
+      <text x="18" y="140" fill="#e6dcf2">elementclient.exe</text>
+      <text x="18" y="166" fill="#e6dcf2">saved appearance .ini</text>
+    </g>
+    <!-- 2 readers -->
+    <g transform="translate(270 105)">
+      <rect width="200" height="190" rx="14" fill="#241a38" stroke="#7d5aa8"/>
+      <text x="100" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#ffd2ec">Readers</text>
+      <text x="18" y="62" fill="#e6dcf2">packages (XOR + zlib)</text>
+      <text x="18" y="88" fill="#e6dcf2">database (MPPC records)</text>
+      <text x="18" y="114" fill="#e6dcf2">meshes · skeletons</text>
+      <text x="18" y="140" fill="#e6dcf2">animations · effects</text>
+      <text x="18" y="166" fill="#e6dcf2">UI dialogs · strings</text>
+    </g>
+    <!-- 3 engine logic -->
+    <g transform="translate(510 105)">
+      <rect width="200" height="190" rx="14" fill="#2c1a3a" stroke="#ff8fc8"/>
+      <text x="100" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#ffd2ec">Engine logic (x86)</text>
+      <text x="18" y="62" fill="#e6dcf2">face morph sliders</text>
+      <text x="18" y="88" fill="#e6dcf2">body-shape bones</text>
+      <text x="18" y="114" fill="#e6dcf2">fashion dye shaders</text>
+      <text x="18" y="140" fill="#e6dcf2">transparency rules</text>
+      <text x="18" y="166" fill="#e6dcf2">mip bias · no MSAA</text>
+    </g>
+    <!-- 4 data -->
+    <g transform="translate(750 105)">
+      <rect width="190" height="190" rx="14" fill="#241a38" stroke="#7d5aa8"/>
+      <text x="95" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#ffd2ec">Wardrobe data</text>
+      <text x="18" y="62" fill="#e6dcf2">catalog.json</text>
+      <text x="18" y="88" fill="#e6dcf2">skinned .glb models</text>
+      <text x="18" y="114" fill="#e6dcf2">original .dds textures</text>
+      <text x="18" y="140" fill="#e6dcf2">animations · effects</text>
+      <text x="18" y="166" fill="#e6dcf2">UI layout + images</text>
+    </g>
+    <!-- 5 app -->
+    <g transform="translate(980 105)">
+      <rect width="180" height="190" rx="14" fill="#2c1a3a" stroke="#ff8fc8"/>
+      <text x="90" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#ffd2ec">Desktop app</text>
+      <text x="18" y="62" fill="#e6dcf2">three.js viewer</text>
+      <text x="18" y="88" fill="#e6dcf2">game UI renderer</text>
+      <text x="18" y="114" fill="#e6dcf2">particle effects</text>
+      <text x="18" y="140" fill="#e6dcf2">C# launcher</text>
+      <text x="18" y="166" fill="#e6dcf2">works offline</text>
+    </g>
+  </g>
+
+  <g stroke="#c9a6ff" stroke-width="2.5" fill="none" marker-end="url(#arr)">
+    <path d="M232 200 L266 200"/>
+    <path d="M472 200 L506 200"/>
+    <path d="M712 200 L746 200"/>
+    <path d="M942 200 L976 200"/>
+  </g>
+
+  <!-- verification loop -->
+  <path d="M1070 297 C1070 370 135 370 135 299" fill="none" stroke="#ff8fc8" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arr)"/>
+  <rect x="380" y="352" width="440" height="34" rx="17" fill="#17112a" stroke="#ff8fc8" stroke-opacity="0.7"/>
+  <text x="600" y="374" text-anchor="middle" font-size="14" fill="#ffd2ec">verification: game screenshots ↔ renders (camera, colour, sharpness)</text>
+</svg>
